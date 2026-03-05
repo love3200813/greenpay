@@ -13,29 +13,27 @@
         .logo { font-size: 1.1rem; font-weight: bold; color: var(--primary-color); cursor: pointer; }
         .cart-icon { position: relative; cursor: pointer; font-size: 1.2rem; padding: 5px; }
         .cart-count { position: absolute; top: -5px; right: -5px; background: var(--primary-color); color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
+        
         .hero { height: 25vh; background: linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.4)), url('https://images.unsplash.com/photo-1513519245088-0e12902e5a38?auto=format&fit=crop&w=1200&q=80'); background-size: cover; background-position: center; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; text-align: center; }
         .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; padding: 20px 4%; }
         .product-card { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #f0f0f0; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .product-img { width: 100%; aspect-ratio: 1/1; background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #f0f0f0; }
         .product-info { padding: 12px; flex-grow: 1; display: flex; flex-direction: column; }
         .product-name { font-size: 0.95rem; font-weight: bold; margin-bottom: 4px; }
-        .product-desc { font-size: 0.75rem; color: #888; margin-bottom: 10px; flex-grow: 1; height: 35px; overflow: hidden; }
+        .product-desc { font-size: 0.75rem; color: #888; margin-bottom: 10px; height: 35px; overflow: hidden; }
         .product-price { color: var(--primary-color); font-weight: bold; font-size: 1rem; margin-bottom: 10px; }
         
-        /* 側邊欄動畫優化 */
         #cartSidebar { position: fixed; right: -100%; top: 0; width: 85%; max-width: 320px; height: 100vh; background: var(--white); z-index: 2000; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -5px 0 15px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
         #cartSidebar.active { right: 0; }
-        
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
+        #overlay.active { display: block; }
+
         .btn-main { width: 100%; padding: 12px; background: var(--primary-color); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         .btn-main:active { transform: scale(0.95); }
-        .btn-added { background: #4CAF50 !important; } /* 加入成功後的顏色反饋 */
+        .btn-added { background: #4CAF50 !important; }
 
         #checkout-site { display: none; padding: 20px; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        
-        /* 遮罩層：當購物車開啟時背景變暗 */
-        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
-        #overlay.active { display: block; }
     </style>
 </head>
 <body>
@@ -79,7 +77,7 @@
     <form id="ecpayForm" method="POST" action="https://payment.ecpay.com.tw/Cashier/AioCheckOut/V5" style="display:none;"></form>
 
     <script>
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycby4HPBQf5rh_n0FF2WspY-FgTbUFYk3KBJcnu4yKwAMUY-aU5JsE1nHGYeFn2x453FV/exec"; 
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxMtgajW5rrXPR7DbbNLnwDD_Wfg717BC_f9g3R6Hh5xA2Mlv6MebBOHJgjZHHFZMdp/exec"; 
         let cart = {};
 
         async function fetchProducts() {
@@ -99,20 +97,16 @@
             } catch (e) { document.getElementById('productGrid').innerHTML = "載入失敗"; }
         }
 
-        // 修改：這裏只負責開關，不再由 addToCart 調用
         function toggleCart() { 
             document.getElementById('cartSidebar').classList.toggle('active'); 
             document.getElementById('overlay').classList.toggle('active'); 
         }
 
-        // 修改：addToCart 不再執行 toggleCart()
         function addToCart(btn, name, price) {
             cart[name] = cart[name] ? { price, qty: cart[name].qty + 1 } : { price, qty: 1 };
-            
-            // 更新數量標示
             updateUI();
-
-            // 新增：按鈕顏色反饋（提示客人已加入）
+            
+            // 按鈕反饋
             const originalText = btn.innerText;
             btn.innerText = "已加入 ✓";
             btn.classList.add('btn-added');
@@ -123,6 +117,7 @@
         }
 
         function updateUI() {
+            const badge = document.getElementById('cartCount');
             const list = document.getElementById('cartItemsList');
             let total = 0, count = 0, html = "";
             for (let name in cart) {
@@ -134,11 +129,8 @@
                          </div>`;
             }
             list.innerHTML = html || "購物車目前是空的";
-            document.getElementById('cartCount').innerText = count;
+            badge.innerText = count;
             document.getElementById('cartFooter').style.display = count > 0 ? "block" : "none";
-            
-            // 購物車數字跳動特效
-            const badge = document.getElementById('cartCount');
             badge.style.transform = "scale(1.3)";
             setTimeout(() => badge.style.transform = "scale(1)", 200);
         }
@@ -148,7 +140,7 @@
             document.getElementById('checkout-site').style.display = "block";
             let total = 0, html = "";
             for (let name in cart) { total += cart[name].price * cart[name].qty; html += `<div>${name} x ${cart[name].qty}</div>`; }
-            document.getElementById('checkoutSummary').innerHTML = html + `<hr><div style="text-align:right; color:red; font-weight:bold;">總計：NT$ ${total}</div>`;
+            document.getElementById('checkoutSummary').innerHTML = html + `<hr><div style="text-align:right; color:red; font-weight:bold;">總金額：NT$ ${total}</div>`;
             toggleCart();
             window.scrollTo(0,0);
         }
