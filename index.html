@@ -43,16 +43,14 @@
         }
         .hero h1 { font-size: 1.8rem; margin-bottom: 5px; text-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        /* --- 商品網格系統核心優化 --- */
+        /* 商品網格 */
         .product-grid { 
             display: grid; 
             padding: 20px 5%;
             gap: 20px;
-            /* 電腦版預設：精確設定為 4 欄排版 */
             grid-template-columns: repeat(4, 1fr); 
         }
 
-        /* 商品卡片樣式 */
         .product-card { 
             background: white; border-radius: 12px; overflow: hidden; 
             display: flex; flex-direction: column; 
@@ -61,43 +59,18 @@
             border: 1px solid #f0f0f0;
         }
         .product-card:hover { transform: translateY(-5px); }
-
         .product-img { width: 100%; aspect-ratio: 1/1; background-size: cover; background-position: center; background-repeat: no-repeat; background-color: #f8f8f8; }
-        
         .product-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         .product-name { font-size: 1rem; font-weight: bold; margin-bottom: 6px; color: #333; }
-        
-        /* 描述文字：自動撐開高度，不遮擋 */
-        .product-desc { 
-            font-size: 0.85rem; color: #666; margin-bottom: 12px; 
-            line-height: 1.4; flex-grow: 1;
-            height: auto; 
-            overflow: visible;
-        }
-        
+        .product-desc { font-size: 0.85rem; color: #666; margin-bottom: 12px; line-height: 1.4; flex-grow: 1; height: auto; overflow: visible; }
         .product-price { color: var(--primary-color); font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; }
 
-        /* --- 響應式裝置判斷 --- */
-        
-        /* 平板版 (小於 1024px)：改為 3 欄 */
-        @media (max-width: 1024px) {
-            .product-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-
-        /* 小平板版 (小於 768px)：改為 2 欄 */
-        @media (max-width: 768px) {
-            .product-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; }
-        }
-
-        /* 手機版 (小於 480px)：改為 1 欄，確保描述文字最清晰 */
+        /* 響應式 */
+        @media (max-width: 1024px) { .product-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 768px) { .product-grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } }
         @media (max-width: 480px) {
-            .product-grid { 
-                grid-template-columns: 1fr; 
-                padding: 15px 8%;
-            }
+            .product-grid { grid-template-columns: 1fr; padding: 15px 8%; }
             .hero { height: 150px; }
-            .product-name { font-size: 1.1rem; }
-            .product-desc { font-size: 0.9rem; }
         }
 
         /* 購物車側欄 */
@@ -111,6 +84,15 @@
         #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; z-index: 1500; backdrop-filter: blur(2px); }
         #overlay.active { display: block; }
 
+        /* 購物車內控制項 */
+        .qty-btn {
+            border: 1px solid #ddd; background: #fff; width: 24px; height: 24px;
+            border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .qty-btn:hover { background: #f0f0f0; }
+        .remove-item { color: #aaa; cursor: pointer; font-size: 0.8rem; text-decoration: underline; margin-top: 5px; }
+        .remove-item:hover { color: var(--primary-color); }
+
         .btn-main { 
             width: 100%; padding: 12px; background: var(--primary-color); 
             color: white; border: none; border-radius: 10px; 
@@ -120,15 +102,8 @@
         .btn-added { background: #4CAF50 !important; }
 
         #checkout-site { display: none; padding: 20px 5%; }
-        .checkout-container { 
-            max-width: 550px; margin: 20px auto; background: white; 
-            padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); 
-        }
-        input { 
-            width: 100%; padding: 12px; margin: 8px 0; 
-            border: 1px solid #eee; border-radius: 8px; font-size: 16px; 
-            background: #fdfdfd;
-        }
+        .checkout-container { max-width: 550px; margin: 20px auto; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #eee; border-radius: 8px; font-size: 16px; background: #fdfdfd; }
     </style>
 </head>
 <body>
@@ -170,16 +145,12 @@
         <div class="checkout-container">
             <h3 style="text-align:center; margin-bottom:20px;">訂單結帳</h3>
             <div id="checkoutSummary" style="padding:15px; background:#FFF9F5; border-radius:12px; border:1px dashed #FFD8D8; margin-bottom:20px;"></div>
-            
             <input type="text" id="custName" placeholder="收件人姓名">
             <input type="text" id="custPhone" placeholder="收件人電話" inputmode="tel">
             <input type="text" id="custLine" placeholder="LINE ID (選填)">
             <input type="text" id="custAddr" placeholder="配送地址">
-            
             <button class="btn-main" id="submitBtn" onclick="submitOrder()">確認並前往支付</button>
-            <p onclick="location.reload()" style="text-align:center; margin-top:15px; color:#aaa; cursor:pointer; font-size:0.9rem;">
-                繼續購物
-            </p>
+            <p onclick="location.reload()" style="text-align:center; margin-top:15px; color:#aaa; cursor:pointer; font-size:0.9rem;">繼續購物</p>
         </div>
     </section>
 
@@ -225,6 +196,21 @@
             }, 800);
         }
 
+        // 修改數量
+        function changeQty(name, delta) {
+            if (cart[name]) {
+                cart[name].qty += delta;
+                if (cart[name].qty <= 0) delete cart[name];
+                updateUI();
+            }
+        }
+
+        // 直接刪除品項
+        function removeItem(name) {
+            delete cart[name];
+            updateUI();
+        }
+
         function updateUI() {
             const badge = document.getElementById('cartCount');
             const list = document.getElementById('cartItemsList');
@@ -233,12 +219,23 @@
                 count += cart[name].qty;
                 total += cart[name].price * cart[name].qty;
                 html += `
-                    <div style="margin-bottom:12px; border-bottom:1px solid #f9f9f9; padding-bottom:8px; display:flex; justify-content:space-between;">
-                        <div><b>${name}</b><br><small>NT$ ${cart[name].price} x ${cart[name].qty}</small></div>
-                        <div style="color:var(--primary-color); font-weight:bold;">$${cart[name].price * cart[name].qty}</div>
+                    <div style="margin-bottom:15px; border-bottom:1px solid #f9f9f9; padding-bottom:12px; display:flex; justify-content:space-between; align-items:flex-start;">
+                        <div style="flex:1;">
+                            <b style="font-size:0.95rem;">${name}</b><br>
+                            <small style="color:#888;">NT$ ${cart[name].price}</small><br>
+                            <span class="remove-item" onclick="removeItem('${name}')">移除此品項</span>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:var(--primary-color); font-weight:bold; margin-bottom:5px;">$${cart[name].price * cart[name].qty}</div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <button class="qty-btn" onclick="changeQty('${name}', -1)">-</button>
+                                <span style="min-width:20px; text-align:center;">${cart[name].qty}</span>
+                                <button class="qty-btn" onclick="changeQty('${name}', 1)">+</button>
+                            </div>
+                        </div>
                     </div>`;
             }
-            list.innerHTML = html || "購物車目前是空的";
+            list.innerHTML = html || "<p style='text-align:center; padding:30px; color:#aaa;'>購物車目前是空的</p>";
             badge.innerText = count;
             document.getElementById('cartFooter').style.display = count > 0 ? "block" : "none";
         }
@@ -249,9 +246,12 @@
             let total = 0, html = "";
             for (let name in cart) { 
                 total += cart[name].price * cart[name].qty; 
-                html += `<div>${name} x ${cart[name].qty}</div>`; 
+                html += `<div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                            <span>${name} x ${cart[name].qty}</span>
+                            <span>$${cart[name].price * cart[name].qty}</span>
+                         </div>`; 
             }
-            document.getElementById('checkoutSummary').innerHTML = html + `<hr style="margin:10px 0; border:none; border-top:1px solid #ffd8d8;"><div style="text-align:right; color:red; font-weight:bold;">總金額：NT$ ${total}</div>`;
+            document.getElementById('checkoutSummary').innerHTML = html + `<hr style="margin:10px 0; border:none; border-top:1px solid #ffd8d8;"><div style="text-align:right; color:red; font-weight:bold; font-size:1.1rem;">總金額：NT$ ${total}</div>`;
             toggleCart();
             window.scrollTo(0,0);
         }
